@@ -25,22 +25,22 @@ The installer:
 
 ```bash
 # Create a new module
-create-microui create Transfers
+owls-microui create Transfers
 
 # Remove a module
-create-microui remove Transfers
+owls-microui remove Transfers
 
 # Preview without changes
-create-microui create --dry-run BillPay
-create-microui remove --dry-run BillPay
+owls-microui create --dry-run BillPay
+owls-microui remove --dry-run BillPay
 
 # With GitHub auth gate
-create-microui create --repo yourorg/repo Transfers
+owls-microui create --repo yourorg/repo Transfers
 
 # Help
-create-microui --help
-create-microui create --help
-create-microui remove --help
+owls-microui --help
+owls-microui create --help
+owls-microui remove --help
 ```
 
 ## What `create` does
@@ -87,5 +87,5 @@ GitHub Actions builds the binary and attaches it to the release.
 ```bash
 swift build          # debug build
 swift build -c release  # release build
-swift run create-microui --help
+swift run owls-microui --help
 ```

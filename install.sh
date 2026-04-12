@@ -62,7 +62,7 @@ echo -e "  ${CYAN}[4/5]${NC} Downloading latest release..."
 ARCH=$(uname -m)
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 
-ASSET_NAME="create-microui-${OS}-${ARCH}"
+ASSET_NAME="owls-microui-${OS}-${ARCH}"
 
 mkdir -p "$INSTALL_DIR"
 
@@ -75,11 +75,11 @@ gh release download --repo "$REPO" --pattern "${ASSET_NAME}" --dir "$INSTALL_DIR
     gh repo clone "$REPO" "$TEMP_DIR" -- --depth 1 --quiet
     cd "$TEMP_DIR"
     swift build -c release --quiet
-    cp ".build/release/create-microui" "$INSTALL_DIR/create-microui"
+    cp ".build/release/owls-microui" "$INSTALL_DIR/owls-microui"
     rm -rf "$TEMP_DIR"
 }
 
-chmod +x "$INSTALL_DIR/create-microui"
+chmod +x "$INSTALL_DIR/owls-microui"
 
 # ─── Step 5: Add to PATH ─────────────────────────────────────
 
@@ -110,11 +110,11 @@ fi
 echo ""
 echo -e "  ${GREEN}✅ OwlsCLI installed successfully!${NC}"
 echo ""
-echo -e "  ${DIM}Installed to:${NC} ${INSTALL_DIR}/create-microui"
+echo -e "  ${DIM}Installed to:${NC} ${INSTALL_DIR}/owls-microui"
 echo ""
 echo -e "  ${BOLD}Restart your terminal, then run:${NC}"
 echo ""
-echo -e "    create-microui --help"
-echo -e "    create-microui create Transfers"
-echo -e "    create-microui remove Transfers"
+echo -e "    owls-microui --help"
+echo -e "    owls-microui create Transfers"
+echo -e "    owls-microui remove Transfers"
 echo ""

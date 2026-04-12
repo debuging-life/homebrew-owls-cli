@@ -2,7 +2,7 @@ import ArgumentParser
 
 struct OwlsCLI: ParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "create-microui",
+        commandName: "owls-microui",
         abstract: "MicroUI module management CLI.",
         version: "2.1.0",
         subcommands: [CreateCommand.self, RemoveCommand.self],

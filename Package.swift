@@ -6,7 +6,7 @@ let package = Package(
     name: "OwlsCLI",
     platforms: [.macOS(.v13)],
     products: [
-        .executable(name: "create-microui", targets: ["OwlsCLI"])
+        .executable(name: "owls-microui", targets: ["OwlsCLI"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0")

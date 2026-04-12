@@ -24,13 +24,13 @@ jobs:
 
       - name: Rename binary
         run: |
-          cp .build/release/create-microui create-microui-${{ matrix.name }}
+          cp .build/release/owls-microui owls-microui-${{ matrix.name }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: create-microui-${{ matrix.name }}
-          path: create-microui-${{ matrix.name }}
+          name: owls-microui-${{ matrix.name }}
+          path: owls-microui-${{ matrix.name }}
 
   release:
     needs: build
