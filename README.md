@@ -1,0 +1,91 @@
+# OwlsCLI
+
+MicroUI module management CLI — scaffold and remove modules with a single command.
+
+## Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/debuging-life/owls-cli/main/install.sh | bash
+```
+
+**Requirements:**
+- macOS 13+
+- GitHub CLI (`brew install gh`)
+- Authenticated (`gh auth login`)
+- Access to this repo
+
+The installer:
+1. Verifies GitHub authentication
+2. Checks repo access
+3. Downloads the pre-built binary (or builds from source)
+4. Installs to `~/.owls/bin/`
+5. Adds to PATH
+
+## Usage
+
+```bash
+# Create a new module
+create-microui create Transfers
+
+# Remove a module
+create-microui remove Transfers
+
+# Preview without changes
+create-microui create --dry-run BillPay
+create-microui remove --dry-run BillPay
+
+# With GitHub auth gate
+create-microui create --repo yourorg/repo Transfers
+
+# Help
+create-microui --help
+create-microui create --help
+create-microui remove --help
+```
+
+## What `create` does
+
+1. Scaffolds `Packages/{Name}MicroUI/` with 16 files:
+   - Builder/ (Config, Router, TileBuilder, ScreenBuilder)
+   - Data/ (API routes, DataSource, ServiceDispatcher)
+   - Domain/ (Models, Repository)
+   - Localization/ (English keys)
+   - ViewModels/
+   - UI/ (Screens, Views)
+   - Tests/
+
+2. Auto-registers in Container+Common.swift (DI slots)
+3. Auto-registers in MicroUIBootstrap.swift (import + config)
+4. Auto-updates project.pbxproj (package reference + framework link)
+
+## What `remove` does
+
+1. Removes DI slots from Container+Common.swift
+2. Removes import + config from MicroUIBootstrap.swift
+3. Removes all references from project.pbxproj
+4. Deletes the module directory
+
+## Uninstall
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/debuging-life/owls-cli/main/uninstall.sh | bash
+```
+
+## Release
+
+Tag a version to trigger the CI build:
+
+```bash
+git tag v2.1.0
+git push origin v2.1.0
+```
+
+GitHub Actions builds the binary and attaches it to the release.
+
+## Development
+
+```bash
+swift build          # debug build
+swift build -c release  # release build
+swift run create-microui --help
+```
