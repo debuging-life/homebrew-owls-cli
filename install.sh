@@ -2,9 +2,10 @@
 set -euo pipefail
 
 # ─────────────────────────────────────────────────────────────
-# OwlsCLI Installer
+# OwlsCLI Installer (Private Repo)
 #
-# Usage: curl -fsSL https://raw.githubusercontent.com/debuging-life/owls-cli/main/install.sh | bash
+# Install: gh api repos/debuging-life/owls-cli/contents/install.sh --jq '.content' | base64 -d | bash
+# Or:      gh repo clone debuging-life/owls-cli /tmp/owls-cli && bash /tmp/owls-cli/install.sh
 # ─────────────────────────────────────────────────────────────
 
 GREEN='\033[0;32m'

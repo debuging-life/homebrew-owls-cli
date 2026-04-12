@@ -5,14 +5,15 @@ MicroUI module management CLI — scaffold and remove modules with a single comm
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/debuging-life/owls-cli/main/install.sh | bash
+# One-line install (private repo — requires gh CLI)
+gh repo clone debuging-life/owls-cli /tmp/owls-cli -- --depth 1 && bash /tmp/owls-cli/install.sh && rm -rf /tmp/owls-cli
 ```
 
 **Requirements:**
 - macOS 13+
 - GitHub CLI (`brew install gh`)
 - Authenticated (`gh auth login`)
-- Access to this repo
+- Access to this repo (private)
 
 The installer:
 1. Verifies GitHub authentication
