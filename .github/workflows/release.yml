@@ -23,8 +23,7 @@ jobs:
         run: swift build -c release
 
       - name: Rename binary
-        run: |
-          cp .build/release/owls-microui owls-microui-${{ matrix.name }}
+        run: cp .build/release/owls-microui owls-microui-${{ matrix.name }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -48,3 +47,45 @@ jobs:
         with:
           files: artifacts/**/*
           generate_release_notes: true
+
+  update-homebrew:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts for SHA256
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Calculate SHA256
+        id: sha
+        run: |
+          ARM64_SHA=$(shasum -a 256 artifacts/owls-microui-darwin-arm64/owls-microui-darwin-arm64 | awk '{print $1}')
+          X86_SHA=$(shasum -a 256 artifacts/owls-microui-darwin-x86_64/owls-microui-darwin-x86_64 | awk '{print $1}')
+          echo "arm64=$ARM64_SHA" >> $GITHUB_OUTPUT
+          echo "x86_64=$X86_SHA" >> $GITHUB_OUTPUT
+
+      - name: Checkout Homebrew tap
+        uses: actions/checkout@v4
+        with:
+          repository: debuging-life/homebrew-tools
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+
+      - name: Update Formula
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          cd homebrew-tap
+          sed -i "s|version \".*\"|version \"${VERSION}\"|" Formula/owls-microui.rb
+          sed -i "s|/download/v[^/]*/|/download/v${VERSION}/|g" Formula/owls-microui.rb
+          sed -i "0,/sha256 \".*\"/s|sha256 \".*\"|sha256 \"${{ steps.sha.outputs.arm64 }}\"|" Formula/owls-microui.rb
+          sed -i "0,/sha256 \".*\"/!{s|sha256 \".*\"|sha256 \"${{ steps.sha.outputs.x86_64 }}\"|}" Formula/owls-microui.rb
+
+      - name: Commit & Push
+        run: |
+          cd homebrew-tap
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add Formula/owls-microui.rb
+          git commit -m "Update owls-microui to ${GITHUB_REF_NAME}" || exit 0
+          git push
