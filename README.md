@@ -2,70 +2,45 @@
 
 MicroUI module management CLI — scaffold and remove modules with a single command.
 
-> **This is a private repo.** Developers only receive the compiled binary — never the source code.
+> **Private repo.** Developers get the compiled binary via Homebrew — source code is never exposed.
 
-## How Distribution Works
+## How It Works
 
 ```
-Admin (you)                              Developers (your team)
+Admin (you)                              Developers (team)
     │                                         │
-    │  1. Push code to this private repo      │
-    │  2. Tag a release (v2.1.0)              │
+    │  1. Push code to private repo           │
+    │  2. git tag v2.2.0                      │
     │  3. GitHub Actions builds binary        │
+    │  4. Auto-updates Homebrew Formula       │
     │                                         │
-    │  4. Share install.sh with team          │
-    │     (Slack, email, internal docs)       │
-    │─────────────────────────────────────►   │
     │                                         │
-    │  5. Developer runs install.sh           │
-    │     → gh checks they have Release       │
-    │       read access (not repo access)     │
-    │     → Downloads ONLY the binary         │
-    │     → Installs to ~/.owls/bin/          │
-    │     → No source code is exposed         │
+    │                     brew tap debuging-life/tools
+    │                     brew install owls-microui
     │                                         │
+    │                     → Downloads binary   │
+    │                     → No source exposed  │
 ```
-
-## Setup (Admin — one time)
-
-### 1. Grant developers Release-only access
-
-On GitHub: **Settings → Collaborators → Add people**
-
-- Give developers **"Read" access** to the repo
-- They can see Releases (to download binary) but NOT the source code
-- OR: Make Releases public while keeping repo private (GitHub supports this via the API)
-
-### 2. Build a release
-
-```bash
-git tag v2.1.0
-git push origin v2.1.0
-# GitHub Actions builds binary and attaches to Release
-```
-
-### 3. Share install.sh with your team
-
-Copy `install.sh` and share via Slack, email, or internal wiki. The script itself contains no secrets — it just downloads the binary.
 
 ## Install (Developers)
 
-Save the `install.sh` script your admin shared, then run:
-
 ```bash
-bash install.sh
+brew tap debuging-life/tools
+brew install owls-microui
 ```
 
-**Requirements:**
-- macOS 13+
-- GitHub CLI (`brew install gh` → `gh auth login`)
-- Release read access to `debuging-life/owls-cli`
+## Update
 
-**What it does:**
-1. Verifies GitHub auth via `gh`
-2. Downloads the binary from GitHub Releases (NOT source)
-3. Installs to `~/.owls/bin/owls-microui`
-4. Adds to PATH
+```bash
+brew upgrade owls-microui
+```
+
+## Uninstall
+
+```bash
+brew uninstall owls-microui
+brew untap debuging-life/tools
+```
 
 ## Usage
 
@@ -99,11 +74,24 @@ owls-microui --help
 3. Removes all references from project.pbxproj
 4. Deletes the module directory
 
-## Uninstall
+## Setup (Admin — one time)
+
+### 1. Create Homebrew tap repo
+
+Create `debuging-life/homebrew-tools` on GitHub with the Formula.
+
+### 2. Add GitHub secret
+
+In `debuging-life/owls-cli` → Settings → Secrets → Actions:
+- Name: `HOMEBREW_TAP_TOKEN`
+- Value: Personal access token with `repo` scope
+
+### 3. Release
 
 ```bash
-rm -rf ~/.owls
-# Then remove the "# OwlsCLI" and PATH line from ~/.zshrc
+git tag v2.2.0
+git push origin v2.2.0
+# CI builds binary → creates Release → updates Homebrew Formula
 ```
 
 ## Development (Admin only)
@@ -112,12 +100,4 @@ rm -rf ~/.owls
 swift build              # debug build
 swift build -c release   # release build
 swift run owls-microui --help
-```
-
-## Release (Admin only)
-
-```bash
-git tag v2.2.0
-git push origin v2.2.0
-# GitHub Actions builds and uploads binary automatically
 ```
