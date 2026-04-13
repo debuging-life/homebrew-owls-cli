@@ -54,7 +54,9 @@ struct ModuleScaffolder {
             ("\(srcDir)/ViewModels/\(c.module)ViewModel.swift", Templates.viewModel(c)),
             ("\(srcDir)/UI/Screens/\(c.module)View.swift", Templates.screenView(c)),
             ("\(srcDir)/UI/Screens/\(c.name)DetailView.swift", Templates.detailView(c)),
+            ("\(srcDir)/UI/Screens/\(c.name)CreateSheet.swift", Templates.createSheet(c)),
             ("\(srcDir)/UI/Views/\(c.name)TileView.swift", Templates.tileView(c)),
+            ("\(srcDir)/Builder/\(c.module)DeepLinkHandler.swift", Templates.deepLinkHandler(c)),
             ("\(testDir)/\(c.module)ViewModelTests.swift", Templates.tests(c)),
         ]
 

@@ -78,6 +78,9 @@ enum Templates {
                 Container.shared.\(c.nameLower)ScreenBuilder.register {
                     \(c.module)ScreenBuilder()
                 }
+
+                // Register deep link handler
+                OwlsDeepLinkRouter.shared.register(\(c.module)DeepLinkHandler())
             }
         }
         """
@@ -359,12 +362,15 @@ enum Templates {
             private(set) var items: [\(c.name)Item] = []
             private(set) var isLoading = false
             private(set) var errorMessage: String?
+            var isCreateSheetPresented = false
 
             private let repository: \(c.name)Repository
 
             init(repository: \(c.name)Repository) {
                 self.repository = repository
             }
+
+            // MARK: - Load
 
             func load() async {
                 isLoading = true
@@ -376,6 +382,20 @@ enum Templates {
                 }
                 isLoading = false
             }
+
+            // MARK: - Create
+
+            func createItem(name: String) async {
+                do {
+                    let newItem = try await repository.create(name: name)
+                    items.insert(newItem, at: 0)
+                    isCreateSheetPresented = false
+                } catch {
+                    errorMessage = error.localizedDescription
+                }
+            }
+
+            // MARK: - Delete
 
             func deleteItem(id: String) async {
                 do {
@@ -395,6 +415,8 @@ enum Templates {
         """
         import SwiftUI
         import MicroUICore
+
+        // MARK: - Main Screen (presented as fullScreenCover from dashboard)
 
         struct \(c.module)View: View {
 
@@ -429,22 +451,41 @@ enum Templates {
                         }
                     }
                     .navigationTitle("\(c.name)")
+                    // MARK: Navigation — push to detail screen
                     .navigationDestination(for: \(c.module)Router.self) { route in
                         route.resolveViewForRoute()
                     }
                     .toolbar {
+                        // MARK: Dismiss — closes fullScreenCover
                         ToolbarItem(placement: .topBarLeading) {
                             Button("Close") { coordinator.dismiss() }
                         }
+                        // MARK: Sheet — opens create form as sheet
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                viewModel.isCreateSheetPresented = true
+                            } label: {
+                                Image(systemName: "plus")
+                            }
+                        }
+                    }
+                    // MARK: Sheet presentation
+                    .sheet(isPresented: $viewModel.isCreateSheetPresented) {
+                        \(c.name)CreateSheet(viewModel: viewModel)
+                            .presentationDetents([.medium])
+                            .presentationDragIndicator(.visible)
                     }
                 }
                 .task { await viewModel.load() }
             }
 
+            // MARK: - List (tapping a row pushes detail screen)
+
             private var itemList: some View {
                 List {
                     ForEach(viewModel.items) { item in
                         Button {
+                            // Navigation: push detail screen
                             path.append(\(c.module)Router.detail(item))
                         } label: {
                             HStack(spacing: OwlsSpacing.md) {
@@ -477,6 +518,62 @@ enum Templates {
                     }
                 }
                 .listStyle(.plain)
+            }
+        }
+        """
+    }
+
+    // MARK: - Create Sheet
+
+    static func createSheet(_ c: Context) -> String {
+        """
+        import SwiftUI
+        import MicroUICore
+
+        // MARK: - Create Sheet (presented as .sheet from main screen)
+
+        struct \(c.name)CreateSheet: View {
+
+            @State private var name = ""
+            @State private var isSaving = false
+            @Environment(\\.dismiss) private var dismiss
+            var viewModel: \(c.module)ViewModel
+
+            var body: some View {
+                NavigationStack {
+                    Form {
+                        Section("New \(c.name)") {
+                            OwlsTextField(
+                                "Name",
+                                placeholder: "Enter name",
+                                text: $name
+                            )
+                        }
+
+                        if let error = viewModel.errorMessage {
+                            Section {
+                                OwlsAlert(.error, message: error)
+                            }
+                        }
+                    }
+                    .navigationTitle("Create \(c.name)")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") { dismiss() }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Save") {
+                                isSaving = true
+                                Task {
+                                    await viewModel.createItem(name: name)
+                                    isSaving = false
+                                }
+                            }
+                            .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || isSaving)
+                        }
+                    }
+                }
             }
         }
         """
@@ -686,6 +783,45 @@ enum Templates {
                 let countBefore = vm.items.count
                 await vm.deleteItem(id: firstId)
                 #expect(vm.items.count == countBefore - 1)
+            }
+        }
+        """
+    }
+
+    // MARK: - Deep Link Handler
+
+    static func deepLinkHandler(_ c: Context) -> String {
+        """
+        import Foundation
+        import MicroUICore
+        import Factory
+
+        // MARK: - Deep Link Handler
+        //
+        // Handles URLs like: owlsapp://\(c.nameLower)/detail/123
+        //
+        // Registered in Config.swift via:
+        //   OwlsDeepLinkRouter.shared.register(\(c.module)DeepLinkHandler())
+
+        struct \(c.module)DeepLinkHandler: OwlsDeepLinkHandler {
+
+            var supportedModules: [String] { ["\(c.nameLower)"] }
+
+            func handle(_ deepLink: OwlsDeepLink) -> Bool {
+                let coordinator = Container.shared.\(c.nameLower)NavigationCoordinator()
+
+                // Parse the path: "\(c.nameLower)/detail/123"
+                let components = deepLink.path.split(separator: "/")
+
+                if components.first == "detail", let id = components.dropFirst().first {
+                    // Pass data to coordinator and present
+                    coordinator.present(style: .fullScreen, data: ["itemId": String(id)])
+                    return true
+                }
+
+                // Default: just open the module
+                coordinator.present(style: .fullScreen)
+                return true
             }
         }
         """
