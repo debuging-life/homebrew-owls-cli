@@ -5,7 +5,7 @@ enum GitHubAuthChecker {
     static func verify(repo: String?) throws {
         let targetRepo = repo
             ?? ProcessInfo.processInfo.environment["OWLS_REPO"]
-            ?? "debuging-life/owls-cli"
+            ?? "debuging-life/homebrew-owls-cli"
 
         Console.info("Verifying GitHub access...")
 

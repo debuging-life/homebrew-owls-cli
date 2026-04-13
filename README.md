@@ -15,7 +15,7 @@ Admin (you)                              Developers (team)
     │  4. Auto-updates Homebrew Formula       │
     │                                         │
     │                                         │
-    │                     brew tap debuging-life/owls-cli
+    │                     brew tap debuging-life/homebrew-owls-cli
     │                     brew install owls-microui
     │                                         │
     │                     → Downloads binary   │
@@ -25,7 +25,7 @@ Admin (you)                              Developers (team)
 ## Install (Developers)
 
 ```bash
-brew tap debuging-life/owls-cli
+brew tap debuging-life/homebrew-owls-cli
 brew install owls-microui
 ```
 
@@ -39,7 +39,7 @@ brew upgrade owls-microui
 
 ```bash
 brew uninstall owls-microui
-brew untap debuging-life/owls-cli
+brew untap debuging-life/homebrew-owls-cli
 ```
 
 ## Usage
