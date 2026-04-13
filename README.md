@@ -15,7 +15,7 @@ Admin (you)                              Developers (team)
     │  4. Auto-updates Homebrew Formula       │
     │                                         │
     │                                         │
-    │                     brew tap debuging-life/tools
+    │                     brew tap debuging-life/owls-cli
     │                     brew install owls-microui
     │                                         │
     │                     → Downloads binary   │
@@ -25,7 +25,7 @@ Admin (you)                              Developers (team)
 ## Install (Developers)
 
 ```bash
-brew tap debuging-life/tools
+brew tap debuging-life/owls-cli
 brew install owls-microui
 ```
 
@@ -39,7 +39,7 @@ brew upgrade owls-microui
 
 ```bash
 brew uninstall owls-microui
-brew untap debuging-life/tools
+brew untap debuging-life/owls-cli
 ```
 
 ## Usage
@@ -76,17 +76,7 @@ owls-microui --help
 
 ## Setup (Admin — one time)
 
-### 1. Create Homebrew tap repo
-
-Create `debuging-life/homebrew-tools` on GitHub with the Formula.
-
-### 2. Add GitHub secret
-
-In `debuging-life/owls-cli` → Settings → Secrets → Actions:
-- Name: `HOMEBREW_TAP_TOKEN`
-- Value: Personal access token with `repo` scope
-
-### 3. Release
+### 1. Release
 
 ```bash
 git tag v2.2.0
