@@ -6,21 +6,21 @@ class OwlsMicroui < Formula
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/debuging-life/homebrew-owls-cli/releases/download/v2.2.0/owls-microui-darwin-arm64",
-          headers: ["Authorization: token #{ENV.fetch("HOMEBREW_GITHUB_API_TOKEN", "")}",
+      url "https://api.github.com/repos/debuging-life/homebrew-owls-cli/releases/assets/394988730",
+          headers: ["Authorization: Bearer #{ENV.fetch("HOMEBREW_GITHUB_API_TOKEN", "")}",
                     "Accept: application/octet-stream"]
       sha256 "9e02025f98b31ce15fb7cfc5e3686b1d383cae46f32fed5e5595bd9cd16ca01c"
     elsif Hardware::CPU.intel?
-      url "https://github.com/debuging-life/homebrew-owls-cli/releases/download/v2.2.0/owls-microui-darwin-x86_64",
-          headers: ["Authorization: token #{ENV.fetch("HOMEBREW_GITHUB_API_TOKEN", "")}",
+      url "https://api.github.com/repos/debuging-life/homebrew-owls-cli/releases/assets/394988729",
+          headers: ["Authorization: Bearer #{ENV.fetch("HOMEBREW_GITHUB_API_TOKEN", "")}",
                     "Accept: application/octet-stream"]
       sha256 "370d596a1d68a7facd731e1d738d6bd38b90c3048f19a283ce26dd50303d82b4"
     end
   end
 
   def install
-    binary_name = stable.url.split("/").last
-    bin.install binary_name => "owls-microui"
+    bin.install "owls-microui-darwin-arm64" => "owls-microui" if Hardware::CPU.arm?
+    bin.install "owls-microui-darwin-x86_64" => "owls-microui" if Hardware::CPU.intel?
   end
 
   test do
