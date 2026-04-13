@@ -6,12 +6,12 @@ class OwlsMicroui < Formula
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://api.github.com/repos/debuging-life/homebrew-owls-cli/releases/assets/394988730",
+      url "https://api.github.com/repos/debuging-life/homebrew-owls-cli/releases/assets/395009250",
           headers: ["Authorization: Bearer #{ENV.fetch("HOMEBREW_GITHUB_API_TOKEN", "")}",
                     "Accept: application/octet-stream"]
       sha256 "77049de14ca7f0df60cdd53b747078d21e0031886bd4f44efd874ae4c149e2a8"
     elsif Hardware::CPU.intel?
-      url "https://api.github.com/repos/debuging-life/homebrew-owls-cli/releases/assets/394988729",
+      url "https://api.github.com/repos/debuging-life/homebrew-owls-cli/releases/assets/395009249",
           headers: ["Authorization: Bearer #{ENV.fetch("HOMEBREW_GITHUB_API_TOKEN", "")}",
                     "Accept: application/octet-stream"]
       sha256 "d7405a81dcb67c6f99a3e706c66fbf7270777bc2cd8b123910e0c5b521b96af3"
