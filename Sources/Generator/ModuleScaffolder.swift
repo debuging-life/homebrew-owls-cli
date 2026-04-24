@@ -25,6 +25,7 @@ struct ModuleScaffolder {
             "\(srcDir)/Data",
             "\(srcDir)/Domain/Models",
             "\(srcDir)/Localization",
+            "\(srcDir)/Mocks/JSON",
             "\(srcDir)/ViewModels",
             "\(srcDir)/UI/Views",
             "\(srcDir)/UI/Screens",
@@ -57,6 +58,10 @@ struct ModuleScaffolder {
             ("\(srcDir)/UI/Screens/\(c.name)DetailView.swift", Templates.detailView(c)),
             ("\(srcDir)/UI/Screens/\(c.name)CreateSheet.swift", Templates.createSheet(c)),
             ("\(srcDir)/UI/Views/\(c.name)TileView.swift", Templates.tileView(c)),
+            ("\(srcDir)/Mocks/\(c.module)MockProvider.swift", Templates.mockProvider(c)),
+            ("\(srcDir)/Mocks/JSON/\(c.nameLower)Success.json", Templates.mockJSONSuccess(c)),
+            ("\(srcDir)/Mocks/JSON/\(c.nameLower)Empty.json", Templates.mockJSONEmpty(c)),
+            ("\(srcDir)/Mocks/JSON/\(c.nameLower)Failure.json", Templates.mockJSONFailure(c)),
             ("\(testDir)/\(c.module)ViewModelTests.swift", Templates.tests(c)),
         ]
 

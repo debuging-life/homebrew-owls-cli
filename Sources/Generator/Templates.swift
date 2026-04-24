@@ -49,7 +49,8 @@ enum Templates {
             targets: [
                 .target(
                     name: "\(c.module)",
-                    dependencies: ["MicroUICore"]
+                    dependencies: ["MicroUICore"],
+                    resources: [.process("Mocks/JSON")]
                 ),
                 .testTarget(
                     name: "\(c.module)Tests",
@@ -81,6 +82,11 @@ enum Templates {
 
                 // Register deep link handler
                 OwlsDeepLinkRouter.shared.register(\(c.module)DeepLinkHandler())
+
+                // Register mock provider — available in Debug Drawer (DEBUG only)
+                #if DEBUG
+                OwlsMockRegistry.shared.register(\(c.module)MockProvider())
+                #endif
             }
         }
         """
@@ -823,6 +829,118 @@ enum Templates {
                 coordinator.present(style: .fullScreen)
                 return true
             }
+        }
+        """
+    }
+
+    // MARK: - Mock Provider
+
+    static func mockProvider(_ c: Context) -> String {
+        """
+        import Foundation
+        import MicroUICore
+
+        // MARK: - Mock Provider
+        //
+        // Lists all mock JSON responses available for this module.
+        // Appears in the Debug Drawer (DEBUG builds only).
+        //
+        // To add a new mock:
+        //   1. Add a JSON file in Mocks/JSON/
+        //   2. Append an OwlsMockItem below with matching endpoint + filename
+
+        public struct \(c.module)MockProvider: OwlsMockProvider {
+
+            public var moduleName: String { "\(c.module)" }
+
+            public init() {}
+
+            public func mockItems() -> [OwlsMockItem] {
+                [
+                    OwlsMockItem(
+                        id: "\(c.nameLower).list.success",
+                        name: "\(c.name) — Success (3 items)",
+                        module: moduleName,
+                        endpoint: "/v1/\(c.nameLower)",
+                        method: .get,
+                        jsonFilename: "\(c.nameLower)Success.json",
+                        bundle: .module,
+                        statusCode: 200,
+                        category: .success
+                    ),
+                    OwlsMockItem(
+                        id: "\(c.nameLower).list.empty",
+                        name: "\(c.name) — Empty",
+                        module: moduleName,
+                        endpoint: "/v1/\(c.nameLower)",
+                        method: .get,
+                        jsonFilename: "\(c.nameLower)Empty.json",
+                        bundle: .module,
+                        statusCode: 200,
+                        category: .empty
+                    ),
+                    OwlsMockItem(
+                        id: "\(c.nameLower).list.failure",
+                        name: "\(c.name) — 500 Server Error",
+                        module: moduleName,
+                        endpoint: "/v1/\(c.nameLower)",
+                        method: .get,
+                        jsonFilename: "\(c.nameLower)Failure.json",
+                        bundle: .module,
+                        statusCode: 500,
+                        category: .failure
+                    ),
+                ]
+            }
+        }
+        """
+    }
+
+    // MARK: - Mock JSON — Success
+
+    static func mockJSONSuccess(_ c: Context) -> String {
+        """
+        [
+            {
+                "id": "mock-1",
+                "title": "Sample \(c.name) 1",
+                "subtitle": "Mocked from \(c.nameLower)Success.json",
+                "iconName": "star.fill",
+                "createdAt": "2026-04-24T12:00:00Z"
+            },
+            {
+                "id": "mock-2",
+                "title": "Sample \(c.name) 2",
+                "subtitle": "Another mock item",
+                "iconName": "heart.fill",
+                "createdAt": "2026-04-24T12:00:00Z"
+            },
+            {
+                "id": "mock-3",
+                "title": "Sample \(c.name) 3",
+                "subtitle": "Third mock item",
+                "iconName": "bolt.fill",
+                "createdAt": "2026-04-24T12:00:00Z"
+            }
+        ]
+        """
+    }
+
+    // MARK: - Mock JSON — Empty
+
+    static func mockJSONEmpty(_ c: Context) -> String {
+        """
+        []
+        """
+    }
+
+    // MARK: - Mock JSON — Failure
+
+    static func mockJSONFailure(_ c: Context) -> String {
+        """
+        {
+            "error": "SERVER_ERROR",
+            "message": "Failed to load \(c.nameLower). Please try again later."
         }
         """
     }
