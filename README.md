@@ -5,9 +5,10 @@ MicroUI module management CLI — scaffold and remove modules with a single comm
 ## Install
 
 ```bash
-brew tap debuging-life/owls-cli https://github.com/debuging-life/homebrew-owls-cli.git
-brew install owls-microui
+brew install debuging-life/owls-cli/owls-microui
 ```
+
+That's it. Homebrew auto-resolves to the public repo and installs the binary.
 
 **Requirements:** macOS 13+
 
