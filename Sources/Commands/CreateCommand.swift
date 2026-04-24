@@ -20,9 +20,6 @@ struct CreateCommand: ParsableCommand {
     @Argument(help: "Feature name (e.g., Transfers, BillPay). MicroUI is appended automatically.")
     var name: String
 
-    @Option(name: .long, help: "GitHub repo to verify access (e.g., yourorg/repo). Also reads OWLS_REPO env var.")
-    var repo: String?
-
     @Flag(name: .long, help: "Preview changes without writing any files.")
     var dryRun = false
 
@@ -52,9 +49,6 @@ struct CreateCommand: ParsableCommand {
         // Pre-flight checks
         try preflight(pkgDir: pkgDir, nameLower: nameLower, module: module,
                       containerFile: containerFile, bootstrapFile: bootstrapFile)
-
-        // GitHub auth
-        try GitHubAuthChecker.verify(repo: repo)
 
         Console.header("Creating MicroUI module: \(Console.cyan)\(module)\(Console.reset)")
 
