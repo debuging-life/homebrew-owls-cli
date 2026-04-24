@@ -1,16 +1,16 @@
 class OwlsMicroui < Formula
   desc "MicroUI module management CLI — scaffold and remove modules"
   homepage "https://github.com/debuging-life/homebrew-owls-cli"
-  version "2.6.0"
+  version "2.7.0"
   license "MIT"
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/debuging-life/homebrew-owls-cli/releases/download/v2.6.0/owls-microui-darwin-arm64"
-      sha256 "e36daa63c4044af9b1473eeafed3ce1244048826f6bb6fe299c8e88f1c1fe60c"
+      url "https://github.com/debuging-life/homebrew-owls-cli/releases/download/v2.7.0/owls-microui-darwin-arm64"
+      sha256 "b4c20bd262d04c31b9e5f6445244e728b4f94397efda47922701cea6821e5379"
     elsif Hardware::CPU.intel?
-      url "https://github.com/debuging-life/homebrew-owls-cli/releases/download/v2.6.0/owls-microui-darwin-x86_64"
-      sha256 "08109b7391ab25ba6f727a278a8f2a967d6a309d4df1dedf3c83adb969302229"
+      url "https://github.com/debuging-life/homebrew-owls-cli/releases/download/v2.7.0/owls-microui-darwin-x86_64"
+      sha256 "6b9bef5c7fc46d63176572abd0fc717bdbfad3b9f30fc657684d49af2fe32464"
     end
   end
 
