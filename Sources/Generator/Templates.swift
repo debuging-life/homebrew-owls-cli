@@ -843,11 +843,12 @@ enum Templates {
         // MARK: - Mock Provider
         //
         // Lists all mock JSON responses available for this module.
+        // Endpoint + method come from \(c.name)API — single source of truth.
         // Appears in the Debug Drawer (DEBUG builds only).
         //
         // To add a new mock:
         //   1. Add a JSON file in Mocks/JSON/
-        //   2. Append an OwlsMockItem below with matching endpoint + filename
+        //   2. Append an OwlsMockItem below referencing the route case
 
         public struct \(c.module)MockProvider: OwlsMockProvider {
 
@@ -856,13 +857,15 @@ enum Templates {
             public init() {}
 
             public func mockItems() -> [OwlsMockItem] {
-                [
+                // Reference the API route — endpoint/method come from \(c.name)API
+                let listRoute = \(c.name)API.list
+
+                return [
                     OwlsMockItem(
                         id: "\(c.nameLower).list.success",
                         name: "\(c.name) — Success (3 items)",
                         module: moduleName,
-                        endpoint: "/v1/\(c.nameLower)",
-                        method: .get,
+                        route: listRoute,
                         jsonFilename: "\(c.nameLower)Success.json",
                         bundle: .module,
                         statusCode: 200,
@@ -872,8 +875,7 @@ enum Templates {
                         id: "\(c.nameLower).list.empty",
                         name: "\(c.name) — Empty",
                         module: moduleName,
-                        endpoint: "/v1/\(c.nameLower)",
-                        method: .get,
+                        route: listRoute,
                         jsonFilename: "\(c.nameLower)Empty.json",
                         bundle: .module,
                         statusCode: 200,
@@ -883,8 +885,7 @@ enum Templates {
                         id: "\(c.nameLower).list.failure",
                         name: "\(c.name) — 500 Server Error",
                         module: moduleName,
-                        endpoint: "/v1/\(c.nameLower)",
-                        method: .get,
+                        route: listRoute,
                         jsonFilename: "\(c.nameLower)Failure.json",
                         bundle: .module,
                         statusCode: 500,
