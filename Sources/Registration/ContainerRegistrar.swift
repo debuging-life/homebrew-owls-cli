@@ -5,12 +5,7 @@ enum ContainerRegistrar {
     static func register(nameLower: String, filePath: String) throws {
         var lines = try String(contentsOfFile: filePath, encoding: .utf8).components(separatedBy: "\n")
 
-        // Insert tile builder after last TileBuilder promised() line
-        if let lastTile = lines.lastIndex(where: { $0.contains("TileBuilder") && $0.contains("promised()") }) {
-            lines.insert("    public var \(nameLower)TileBuilder: Factory<MicroUITileBuilder?> { promised() }", at: lastTile + 1)
-        }
-
-        // Insert screen builder after last ScreenBuilder promised() line (re-scan)
+        // Insert screen builder after last ScreenBuilder promised() line
         if let lastScreen = lines.lastIndex(where: { $0.contains("ScreenBuilder") && $0.contains("promised()") }) {
             lines.insert("    public var \(nameLower)ScreenBuilder: Factory<MicroUIScreenBuilder?> { promised() }", at: lastScreen + 1)
         }

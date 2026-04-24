@@ -72,9 +72,6 @@ enum Templates {
             public init() {}
 
             public func registerMicroUI() {
-                Container.shared.\(c.nameLower)TileBuilder.register {
-                    \(c.module)TileBuilder()
-                }
                 Container.shared.\(c.nameLower)ScreenBuilder.register {
                     \(c.module)ScreenBuilder()
                 }
