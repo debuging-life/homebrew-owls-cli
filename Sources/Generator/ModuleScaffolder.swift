@@ -26,6 +26,7 @@ struct ModuleScaffolder {
             "\(srcDir)/Domain/Models",
             "\(srcDir)/Localization",
             "\(srcDir)/ViewModels",
+            "\(srcDir)/UI/Views",
             "\(srcDir)/UI/Screens",
             testDir,
         ]
@@ -42,6 +43,7 @@ struct ModuleScaffolder {
             ("\(pkgDir)/Package.swift", Templates.packageSwift(c)),
             ("\(srcDir)/Builder/\(c.module)Config.swift", Templates.config(c)),
             ("\(srcDir)/Builder/\(c.module)Router.swift", Templates.router(c)),
+            ("\(srcDir)/Builder/\(c.module)TileBuilder.swift", Templates.tileBuilder(c)),
             ("\(srcDir)/Builder/\(c.module)ScreenBuilder.swift", Templates.screenBuilder(c)),
             ("\(srcDir)/Builder/\(c.module)DeepLinkHandler.swift", Templates.deepLinkHandler(c)),
             ("\(srcDir)/Data/\(c.name)API.swift", Templates.apiRoutes(c)),
@@ -54,6 +56,7 @@ struct ModuleScaffolder {
             ("\(srcDir)/UI/Screens/\(c.module)View.swift", Templates.screenView(c)),
             ("\(srcDir)/UI/Screens/\(c.name)DetailView.swift", Templates.detailView(c)),
             ("\(srcDir)/UI/Screens/\(c.name)CreateSheet.swift", Templates.createSheet(c)),
+            ("\(srcDir)/UI/Views/\(c.name)TileView.swift", Templates.tileView(c)),
             ("\(testDir)/\(c.module)ViewModelTests.swift", Templates.tests(c)),
         ]
 
