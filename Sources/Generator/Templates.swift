@@ -65,6 +65,7 @@ enum Templates {
 
     static func config(_ c: Context) -> String {
         """
+        import SwiftUI
         import MicroUICore
         import Factory
 
@@ -87,6 +88,13 @@ enum Templates {
                 #if DEBUG
                 OwlsMockRegistry.shared.register(\(c.module)MockProvider())
                 #endif
+            }
+
+            /// Factory for Example apps and host apps that want to render
+            /// this module's screen directly without going through the Container.
+            @MainActor
+            public static func makeScreen() -> AnyView {
+                \(c.module)ScreenBuilder().buildScreen()
             }
         }
         """
@@ -943,6 +951,459 @@ enum Templates {
             "error": "SERVER_ERROR",
             "message": "Failed to load \(c.nameLower). Please try again later."
         }
+        """
+    }
+
+    // MARK: - Example App: SwiftUI entry point
+
+    static func exampleApp(_ c: Context) -> String {
+        """
+        import SwiftUI
+        import MicroUICore
+        import \(c.module)
+
+        @main
+        struct \(c.name)ExampleApp: App {
+
+            init() {
+                ExampleBootstrap.run()
+                OwlsImageCache.configure()
+            }
+
+            var body: some Scene {
+                WindowGroup {
+                    \(c.module)Config.makeScreen()
+                        .owlsErrorAlert()
+                        #if DEBUG
+                        .overlay(alignment: .bottomTrailing) { OwlsDebugButton() }
+                        #endif
+                }
+            }
+        }
+        """
+    }
+
+    // MARK: - Example App: Bootstrap with stubs
+
+    static func exampleBootstrap(_ c: Context) -> String {
+        """
+        import MicroUICore
+        import \(c.module)
+        import Factory
+
+        // To use REAL modules instead of stubs, add their packages to this xcodeproj
+        // then uncomment the imports + registrations below.
+        //
+        // import FeatureHomeMicroUI
+        // import FeatureProfileMicroUI
+        // import AuthMicroUI
+
+        enum ExampleBootstrap {
+
+            static func run() {
+                registerFocusedModule()
+                registerCrossModuleStubs()
+                registerCoreServices()
+                enableDefaultMocks()
+            }
+
+            // MARK: - Register the focused module
+
+            private static func registerFocusedModule() {
+                \(c.module)Config().registerMicroUI()
+            }
+
+            // MARK: - Stub cross-module DI slots
+
+            private static func registerCrossModuleStubs() {
+                // Auth token — so OwlsBaseService works
+                Container.shared.authTokenProvider.register {
+                    OwlsStubAuthTokenProvider()
+                }
+
+                // Stubs for tile builders this module may embed.
+                // Comment out + replace with real config to test integration.
+                Container.shared.homeTileBuilder.register {
+                    OwlsStubTileBuilder(label: "Home Tile")
+                }
+                Container.shared.profileTileBuilder.register {
+                    OwlsStubTileBuilder(label: "Profile Tile")
+                }
+
+                // Real-module integration example:
+                // FeatureHomeMicroUIConfig().registerMicroUI()
+            }
+
+            // MARK: - Core services
+
+            private static func registerCoreServices() {
+                Container.shared.analyticsProviders.register { [] }
+            }
+
+            // MARK: - Pre-enable success mocks
+
+            private static func enableDefaultMocks() {
+                #if DEBUG
+                OwlsMockRegistry.shared.setEnabled("\(c.nameLower).list.success", enabled: true)
+                #endif
+            }
+        }
+        """
+    }
+
+    // MARK: - Example App: Asset catalog files
+
+    static func exampleAssetsContents() -> String {
+        """
+        {
+          "info" : {
+            "author" : "xcode",
+            "version" : 1
+          }
+        }
+        """
+    }
+
+    static func exampleAccentColor() -> String {
+        """
+        {
+          "colors" : [
+            {
+              "idiom" : "universal"
+            }
+          ],
+          "info" : {
+            "author" : "xcode",
+            "version" : 1
+          }
+        }
+        """
+    }
+
+    static func exampleAppIcon() -> String {
+        """
+        {
+          "images" : [
+            {
+              "idiom" : "universal",
+              "platform" : "ios",
+              "size" : "1024x1024"
+            }
+          ],
+          "info" : {
+            "author" : "xcode",
+            "version" : 1
+          }
+        }
+        """
+    }
+
+    // MARK: - Example App: Xcode project file
+
+    static func examplePbxproj(_ c: Context) -> String {
+        let appName = "\(c.name)ExampleApp"
+        let module = c.module
+        let bundleSuffix = "\(c.nameLower)exampleapp"
+
+        return """
+        // !$*UTF8*$!
+        {
+        \tarchiveVersion = 1;
+        \tclasses = {
+        \t};
+        \tobjectVersion = 77;
+        \tobjects = {
+
+        /* Begin PBXBuildFile section */
+        \t\tA1B2C3D4E5F60000000000A1 /* MicroUICore in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F60000000000A2 /* MicroUICore */; };
+        \t\tA1B2C3D4E5F60000000000A3 /* \(module) in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F60000000000A4 /* \(module) */; };
+        /* End PBXBuildFile section */
+
+        /* Begin PBXFileReference section */
+        \t\tA1B2C3D4E5F60000000000B0 /* \(appName).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = \(appName).app; sourceTree = BUILT_PRODUCTS_DIR; };
+        /* End PBXFileReference section */
+
+        /* Begin PBXFileSystemSynchronizedRootGroup section */
+        \t\tA1B2C3D4E5F60000000000C0 /* \(appName) */ = {
+        \t\t\tisa = PBXFileSystemSynchronizedRootGroup;
+        \t\t\tpath = \(appName);
+        \t\t\tsourceTree = "<group>";
+        \t\t};
+        /* End PBXFileSystemSynchronizedRootGroup section */
+
+        /* Begin PBXFrameworksBuildPhase section */
+        \t\tA1B2C3D4E5F60000000000D0 /* Frameworks */ = {
+        \t\t\tisa = PBXFrameworksBuildPhase;
+        \t\t\tbuildActionMask = 2147483647;
+        \t\t\tfiles = (
+        \t\t\t\tA1B2C3D4E5F60000000000A1 /* MicroUICore in Frameworks */,
+        \t\t\t\tA1B2C3D4E5F60000000000A3 /* \(module) in Frameworks */,
+        \t\t\t);
+        \t\t\trunOnlyForDeploymentPostprocessing = 0;
+        \t\t};
+        /* End PBXFrameworksBuildPhase section */
+
+        /* Begin PBXGroup section */
+        \t\tA1B2C3D4E5F60000000000E0 = {
+        \t\t\tisa = PBXGroup;
+        \t\t\tchildren = (
+        \t\t\t\tA1B2C3D4E5F60000000000C0 /* \(appName) */,
+        \t\t\t\tA1B2C3D4E5F60000000000F0 /* Products */,
+        \t\t\t);
+        \t\t\tsourceTree = "<group>";
+        \t\t};
+        \t\tA1B2C3D4E5F60000000000F0 /* Products */ = {
+        \t\t\tisa = PBXGroup;
+        \t\t\tchildren = (
+        \t\t\t\tA1B2C3D4E5F60000000000B0 /* \(appName).app */,
+        \t\t\t);
+        \t\t\tname = Products;
+        \t\t\tsourceTree = "<group>";
+        \t\t};
+        /* End PBXGroup section */
+
+        /* Begin PBXNativeTarget section */
+        \t\tA1B2C3D4E5F600000000010A /* \(appName) */ = {
+        \t\t\tisa = PBXNativeTarget;
+        \t\t\tbuildConfigurationList = A1B2C3D4E5F600000000020A /* Build configuration list for PBXNativeTarget "\(appName)" */;
+        \t\t\tbuildPhases = (
+        \t\t\t\tA1B2C3D4E5F600000000030A /* Sources */,
+        \t\t\t\tA1B2C3D4E5F60000000000D0 /* Frameworks */,
+        \t\t\t\tA1B2C3D4E5F600000000040A /* Resources */,
+        \t\t\t);
+        \t\t\tbuildRules = (
+        \t\t\t);
+        \t\t\tdependencies = (
+        \t\t\t);
+        \t\t\tfileSystemSynchronizedGroups = (
+        \t\t\t\tA1B2C3D4E5F60000000000C0 /* \(appName) */,
+        \t\t\t);
+        \t\t\tname = \(appName);
+        \t\t\tpackageProductDependencies = (
+        \t\t\t\tA1B2C3D4E5F60000000000A2 /* MicroUICore */,
+        \t\t\t\tA1B2C3D4E5F60000000000A4 /* \(module) */,
+        \t\t\t);
+        \t\t\tproductName = \(appName);
+        \t\t\tproductReference = A1B2C3D4E5F60000000000B0 /* \(appName).app */;
+        \t\t\tproductType = "com.apple.product-type.application";
+        \t\t};
+        /* End PBXNativeTarget section */
+
+        /* Begin PBXProject section */
+        \t\tA1B2C3D4E5F600000000050A /* Project object */ = {
+        \t\t\tisa = PBXProject;
+        \t\t\tattributes = {
+        \t\t\t\tBuildIndependentTargetsInParallel = 1;
+        \t\t\t\tLastSwiftUpdateCheck = 2630;
+        \t\t\t\tLastUpgradeCheck = 2630;
+        \t\t\t\tTargetAttributes = {
+        \t\t\t\t\tA1B2C3D4E5F600000000010A = {
+        \t\t\t\t\t\tCreatedOnToolsVersion = 26.3;
+        \t\t\t\t\t};
+        \t\t\t\t};
+        \t\t\t};
+        \t\t\tbuildConfigurationList = A1B2C3D4E5F600000000060A /* Build configuration list for PBXProject "\(appName)" */;
+        \t\t\tdevelopmentRegion = en;
+        \t\t\thasScannedForEncodings = 0;
+        \t\t\tknownRegions = (
+        \t\t\t\ten,
+        \t\t\t\tBase,
+        \t\t\t);
+        \t\t\tmainGroup = A1B2C3D4E5F60000000000E0;
+        \t\t\tminimizedProjectReferenceProxies = 1;
+        \t\t\tpackageReferences = (
+        \t\t\t\tA1B2C3D4E5F600000000070A /* XCLocalSwiftPackageReference "../../MicroUICore" */,
+        \t\t\t\tA1B2C3D4E5F600000000080A /* XCLocalSwiftPackageReference "../" */,
+        \t\t\t);
+        \t\t\tpreferredProjectObjectVersion = 77;
+        \t\t\tproductRefGroup = A1B2C3D4E5F60000000000F0 /* Products */;
+        \t\t\tprojectDirPath = "";
+        \t\t\tprojectRoot = "";
+        \t\t\ttargets = (
+        \t\t\t\tA1B2C3D4E5F600000000010A /* \(appName) */,
+        \t\t\t);
+        \t\t};
+        /* End PBXProject section */
+
+        /* Begin PBXResourcesBuildPhase section */
+        \t\tA1B2C3D4E5F600000000040A /* Resources */ = {
+        \t\t\tisa = PBXResourcesBuildPhase;
+        \t\t\tbuildActionMask = 2147483647;
+        \t\t\tfiles = (
+        \t\t\t);
+        \t\t\trunOnlyForDeploymentPostprocessing = 0;
+        \t\t};
+        /* End PBXResourcesBuildPhase section */
+
+        /* Begin PBXSourcesBuildPhase section */
+        \t\tA1B2C3D4E5F600000000030A /* Sources */ = {
+        \t\t\tisa = PBXSourcesBuildPhase;
+        \t\t\tbuildActionMask = 2147483647;
+        \t\t\tfiles = (
+        \t\t\t);
+        \t\t\trunOnlyForDeploymentPostprocessing = 0;
+        \t\t};
+        /* End PBXSourcesBuildPhase section */
+
+        /* Begin XCBuildConfiguration section */
+        \t\tA1B2C3D4E5F600000000090A /* Debug */ = {
+        \t\t\tisa = XCBuildConfiguration;
+        \t\t\tbuildSettings = {
+        \t\t\t\tALWAYS_SEARCH_USER_PATHS = NO;
+        \t\t\t\tCLANG_ANALYZER_NONNULL = YES;
+        \t\t\t\tCLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+        \t\t\t\tCLANG_ENABLE_MODULES = YES;
+        \t\t\t\tCLANG_ENABLE_OBJC_ARC = YES;
+        \t\t\t\tCLANG_ENABLE_OBJC_WEAK = YES;
+        \t\t\t\tCOPY_PHASE_STRIP = NO;
+        \t\t\t\tDEBUG_INFORMATION_FORMAT = dwarf;
+        \t\t\t\tENABLE_STRICT_OBJC_MSGSEND = YES;
+        \t\t\t\tENABLE_TESTABILITY = YES;
+        \t\t\t\tENABLE_USER_SCRIPT_SANDBOXING = YES;
+        \t\t\t\tGCC_C_LANGUAGE_STANDARD = gnu17;
+        \t\t\t\tGCC_NO_COMMON_BLOCKS = YES;
+        \t\t\t\tGCC_OPTIMIZATION_LEVEL = 0;
+        \t\t\t\tGCC_PREPROCESSOR_DEFINITIONS = (
+        \t\t\t\t\t"DEBUG=1",
+        \t\t\t\t\t"$(inherited)",
+        \t\t\t\t);
+        \t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 17.0;
+        \t\t\t\tMTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+        \t\t\t\tMTL_FAST_MATH = YES;
+        \t\t\t\tONLY_ACTIVE_ARCH = YES;
+        \t\t\t\tSDKROOT = iphoneos;
+        \t\t\t\tSWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+        \t\t\t\tSWIFT_OPTIMIZATION_LEVEL = "-Onone";
+        \t\t\t};
+        \t\t\tname = Debug;
+        \t\t};
+        \t\tA1B2C3D4E5F60000000000A0 /* Release */ = {
+        \t\t\tisa = XCBuildConfiguration;
+        \t\t\tbuildSettings = {
+        \t\t\t\tALWAYS_SEARCH_USER_PATHS = NO;
+        \t\t\t\tCLANG_ANALYZER_NONNULL = YES;
+        \t\t\t\tCLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+        \t\t\t\tCLANG_ENABLE_MODULES = YES;
+        \t\t\t\tCLANG_ENABLE_OBJC_ARC = YES;
+        \t\t\t\tCLANG_ENABLE_OBJC_WEAK = YES;
+        \t\t\t\tCOPY_PHASE_STRIP = NO;
+        \t\t\t\tDEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+        \t\t\t\tENABLE_NS_ASSERTIONS = NO;
+        \t\t\t\tENABLE_STRICT_OBJC_MSGSEND = YES;
+        \t\t\t\tENABLE_USER_SCRIPT_SANDBOXING = YES;
+        \t\t\t\tGCC_C_LANGUAGE_STANDARD = gnu17;
+        \t\t\t\tGCC_NO_COMMON_BLOCKS = YES;
+        \t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 17.0;
+        \t\t\t\tMTL_ENABLE_DEBUG_INFO = NO;
+        \t\t\t\tMTL_FAST_MATH = YES;
+        \t\t\t\tSDKROOT = iphoneos;
+        \t\t\t\tSWIFT_COMPILATION_MODE = wholemodule;
+        \t\t\t\tVALIDATE_PRODUCT = YES;
+        \t\t\t};
+        \t\t\tname = Release;
+        \t\t};
+        \t\tA1B2C3D4E5F60000000000B1 /* Debug */ = {
+        \t\t\tisa = XCBuildConfiguration;
+        \t\t\tbuildSettings = {
+        \t\t\t\tASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+        \t\t\t\tASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+        \t\t\t\tCODE_SIGN_STYLE = Automatic;
+        \t\t\t\tCURRENT_PROJECT_VERSION = 1;
+        \t\t\t\tENABLE_PREVIEWS = YES;
+        \t\t\t\tGENERATE_INFOPLIST_FILE = YES;
+        \t\t\t\tINFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+        \t\t\t\tINFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+        \t\t\t\tINFOPLIST_KEY_UILaunchScreen_Generation = YES;
+        \t\t\t\tINFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+        \t\t\t\tINFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+        \t\t\t\tLD_RUNPATH_SEARCH_PATHS = (
+        \t\t\t\t\t"$(inherited)",
+        \t\t\t\t\t"@executable_path/Frameworks",
+        \t\t\t\t);
+        \t\t\t\tMARKETING_VERSION = 1.0;
+        \t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = aap.loudowls.\(bundleSuffix);
+        \t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";
+        \t\t\t\tSWIFT_EMIT_LOC_STRINGS = YES;
+        \t\t\t\tSWIFT_VERSION = 5.0;
+        \t\t\t\tTARGETED_DEVICE_FAMILY = "1,2";
+        \t\t\t};
+        \t\t\tname = Debug;
+        \t\t};
+        \t\tA1B2C3D4E5F60000000000C1 /* Release */ = {
+        \t\t\tisa = XCBuildConfiguration;
+        \t\t\tbuildSettings = {
+        \t\t\t\tASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+        \t\t\t\tASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+        \t\t\t\tCODE_SIGN_STYLE = Automatic;
+        \t\t\t\tCURRENT_PROJECT_VERSION = 1;
+        \t\t\t\tENABLE_PREVIEWS = YES;
+        \t\t\t\tGENERATE_INFOPLIST_FILE = YES;
+        \t\t\t\tINFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+        \t\t\t\tINFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+        \t\t\t\tINFOPLIST_KEY_UILaunchScreen_Generation = YES;
+        \t\t\t\tINFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+        \t\t\t\tINFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+        \t\t\t\tLD_RUNPATH_SEARCH_PATHS = (
+        \t\t\t\t\t"$(inherited)",
+        \t\t\t\t\t"@executable_path/Frameworks",
+        \t\t\t\t);
+        \t\t\t\tMARKETING_VERSION = 1.0;
+        \t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = aap.loudowls.\(bundleSuffix);
+        \t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";
+        \t\t\t\tSWIFT_EMIT_LOC_STRINGS = YES;
+        \t\t\t\tSWIFT_VERSION = 5.0;
+        \t\t\t\tTARGETED_DEVICE_FAMILY = "1,2";
+        \t\t\t};
+        \t\t\tname = Release;
+        \t\t};
+        /* End XCBuildConfiguration section */
+
+        /* Begin XCConfigurationList section */
+        \t\tA1B2C3D4E5F600000000060A /* Build configuration list for PBXProject "\(appName)" */ = {
+        \t\t\tisa = XCConfigurationList;
+        \t\t\tbuildConfigurations = (
+        \t\t\t\tA1B2C3D4E5F600000000090A /* Debug */,
+        \t\t\t\tA1B2C3D4E5F60000000000A0 /* Release */,
+        \t\t\t);
+        \t\t\tdefaultConfigurationIsVisible = 0;
+        \t\t\tdefaultConfigurationName = Release;
+        \t\t};
+        \t\tA1B2C3D4E5F600000000020A /* Build configuration list for PBXNativeTarget "\(appName)" */ = {
+        \t\t\tisa = XCConfigurationList;
+        \t\t\tbuildConfigurations = (
+        \t\t\t\tA1B2C3D4E5F60000000000B1 /* Debug */,
+        \t\t\t\tA1B2C3D4E5F60000000000C1 /* Release */,
+        \t\t\t);
+        \t\t\tdefaultConfigurationIsVisible = 0;
+        \t\t\tdefaultConfigurationName = Release;
+        \t\t};
+        /* End XCConfigurationList section */
+
+        /* Begin XCLocalSwiftPackageReference section */
+        \t\tA1B2C3D4E5F600000000070A /* XCLocalSwiftPackageReference "../../MicroUICore" */ = {
+        \t\t\tisa = XCLocalSwiftPackageReference;
+        \t\t\trelativePath = ../../MicroUICore;
+        \t\t};
+        \t\tA1B2C3D4E5F600000000080A /* XCLocalSwiftPackageReference "../" */ = {
+        \t\t\tisa = XCLocalSwiftPackageReference;
+        \t\t\trelativePath = ../;
+        \t\t};
+        /* End XCLocalSwiftPackageReference section */
+
+        /* Begin XCSwiftPackageProductDependency section */
+        \t\tA1B2C3D4E5F60000000000A2 /* MicroUICore */ = {
+        \t\t\tisa = XCSwiftPackageProductDependency;
+        \t\t\tproductName = MicroUICore;
+        \t\t};
+        \t\tA1B2C3D4E5F60000000000A4 /* \(module) */ = {
+        \t\t\tisa = XCSwiftPackageProductDependency;
+        \t\t\tproductName = \(module);
+        \t\t};
+        /* End XCSwiftPackageProductDependency section */
+        \t};
+        \trootObject = A1B2C3D4E5F600000000050A /* Project object */;
+        }
+
         """
     }
 }

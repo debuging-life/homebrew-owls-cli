@@ -23,6 +23,9 @@ struct CreateCommand: ParsableCommand {
     @Flag(name: .long, help: "Preview changes without writing any files.")
     var dryRun = false
 
+    @Flag(name: .long, help: "Skip generating the Example/ sandbox app.")
+    var noSandbox = false
+
     // MARK: - Validation
 
     func validate() throws {
@@ -79,7 +82,7 @@ struct CreateCommand: ParsableCommand {
 
         // Step 1: Scaffold
         Console.step(1, of: 4, "Scaffolding module files...")
-        let scaffolder = ModuleScaffolder(projectRoot: projectRoot, context: context)
+        let scaffolder = ModuleScaffolder(projectRoot: projectRoot, context: context, includeSandbox: !noSandbox)
         try scaffolder.scaffold()
 
         // Step 2: Container

@@ -4,16 +4,29 @@ struct ModuleScaffolder {
 
     let projectRoot: String
     let context: Templates.Context
+    let includeSandbox: Bool
 
     private var pkgDir: String { "\(projectRoot)/Packages/\(context.module)" }
     private var srcDir: String { "\(pkgDir)/Sources/\(context.module)" }
     private var testDir: String { "\(pkgDir)/Tests/\(context.module)Tests" }
+    private var exampleDir: String { "\(pkgDir)/Example" }
+    private var exampleAppName: String { "\(context.name)ExampleApp" }
+
+    init(projectRoot: String, context: Templates.Context, includeSandbox: Bool = true) {
+        self.projectRoot = projectRoot
+        self.context = context
+        self.includeSandbox = includeSandbox
+    }
 
     // MARK: - Scaffold
 
     func scaffold() throws {
         try createDirectories()
         try writeFiles()
+        if includeSandbox {
+            try createSandboxDirectories()
+            try writeSandboxFiles()
+        }
     }
 
     // MARK: - Directories
@@ -30,6 +43,18 @@ struct ModuleScaffolder {
             "\(srcDir)/UI/Views",
             "\(srcDir)/UI/Screens",
             testDir,
+        ]
+        for dir in dirs {
+            try fm.createDirectory(atPath: dir, withIntermediateDirectories: true)
+        }
+    }
+
+    private func createSandboxDirectories() throws {
+        let fm = FileManager.default
+        let dirs = [
+            "\(exampleDir)/\(exampleAppName)/Assets.xcassets/AccentColor.colorset",
+            "\(exampleDir)/\(exampleAppName)/Assets.xcassets/AppIcon.appiconset",
+            "\(exampleDir)/\(exampleAppName).xcodeproj",
         ]
         for dir in dirs {
             try fm.createDirectory(atPath: dir, withIntermediateDirectories: true)
@@ -63,6 +88,23 @@ struct ModuleScaffolder {
             ("\(srcDir)/Mocks/JSON/\(c.nameLower)Empty.json", Templates.mockJSONEmpty(c)),
             ("\(srcDir)/Mocks/JSON/\(c.nameLower)Failure.json", Templates.mockJSONFailure(c)),
             ("\(testDir)/\(c.module)ViewModelTests.swift", Templates.tests(c)),
+        ]
+
+        for (path, content) in files {
+            try content.write(toFile: path, atomically: true, encoding: .utf8)
+        }
+    }
+
+    private func writeSandboxFiles() throws {
+        let c = context
+        let app = exampleAppName
+        let files: [(String, String)] = [
+            ("\(exampleDir)/\(app)/\(app).swift", Templates.exampleApp(c)),
+            ("\(exampleDir)/\(app)/ExampleBootstrap.swift", Templates.exampleBootstrap(c)),
+            ("\(exampleDir)/\(app)/Assets.xcassets/Contents.json", Templates.exampleAssetsContents()),
+            ("\(exampleDir)/\(app)/Assets.xcassets/AccentColor.colorset/Contents.json", Templates.exampleAccentColor()),
+            ("\(exampleDir)/\(app)/Assets.xcassets/AppIcon.appiconset/Contents.json", Templates.exampleAppIcon()),
+            ("\(exampleDir)/\(app).xcodeproj/project.pbxproj", Templates.examplePbxproj(c)),
         ]
 
         for (path, content) in files {
