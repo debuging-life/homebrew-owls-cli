@@ -17,10 +17,11 @@ That's it. Public repo, no auth needed.
 ## Usage
 
 ```bash
-owls-microui create Transfers         # scaffold + auto-register
-owls-microui remove Transfers         # clean removal (asks for confirmation)
-owls-microui create --dry-run BillPay # preview without writing
-owls-microui remove --dry-run BillPay # preview without deleting
+owls-microui create Transfers              # scaffold + auto-register + Example app
+owls-microui create Transfers --no-sandbox # skip Example/ sandbox app
+owls-microui remove Transfers              # clean removal (asks for confirmation)
+owls-microui create --dry-run BillPay      # preview without writing
+owls-microui remove --dry-run BillPay      # preview without deleting
 owls-microui --help
 ```
 
@@ -55,7 +56,7 @@ brew untap debuging-life/owls-cli
 
 ## What `create` does
 
-Running `owls-microui create Transfers` does **8 things automatically** — zero manual setup.
+Running `owls-microui create Transfers` does **9 things automatically** — zero manual setup.
 
 ### 1. Scaffolds full module structure
 
@@ -93,6 +94,12 @@ Packages/TransfersMicroUI/
 │       │   └── TransfersCreateSheet.swift     ← .sheet form
 │       └── Views/
 │           └── TransfersTileView.swift        ← reusable widget
+├── Example/                                   ← NEW: standalone sandbox app
+│   ├── TransfersExampleApp.xcodeproj          ← open this to run module alone
+│   └── TransfersExampleApp/
+│       ├── TransfersExampleApp.swift          ← @main entry
+│       ├── ExampleBootstrap.swift             ← stubs + mock setup
+│       └── Assets.xcassets/
 └── Tests/TransfersMicroUITests/
     └── TransfersMicroUIViewModelTests.swift   ← 3 starter tests
 ```
@@ -264,6 +271,68 @@ OwlsMockItem(
 
 ---
 
+## Example Sandbox Apps
+
+Every new module gets an **Example/** folder containing a standalone iOS app that runs **just that module** — no main app, no other modules, no login. Mocks pre-enabled.
+
+### How to use
+
+```bash
+# After creating a module
+open Packages/TransfersMicroUI/Example/TransfersExampleApp.xcodeproj
+
+# In Xcode, hit ⌘R — Transfers module launches alone
+```
+
+### What's inside the Example folder
+
+```
+Example/
+├── TransfersExampleApp.xcodeproj            ← references parent SPM package via ../
+└── TransfersExampleApp/
+    ├── TransfersExampleApp.swift            ← @main App
+    ├── ExampleBootstrap.swift               ← minimal DI + stubs + mock setup
+    └── Assets.xcassets/
+        ├── AccentColor.colorset/
+        └── AppIcon.appiconset/
+```
+
+### How it preserves the "no module imports another" rule
+
+The Example app is a **host** — like the main app — that imports specific modules and registers them. The module's own source code stays pure.
+
+For cross-module DI slots the focused module uses, the Example app registers stubs via `OwlsStubBuilders` (defined in MicroUICore):
+
+```swift
+// Inside ExampleBootstrap.swift
+Container.shared.profileTileBuilder.register {
+    OwlsStubTileBuilder(label: "Profile Tile")  // dashed-border placeholder
+}
+Container.shared.authTokenProvider.register {
+    OwlsStubAuthTokenProvider()  // returns dummy token, OwlsBaseService works
+}
+```
+
+To swap a stub for a **real module** (integration mode):
+
+1. Add the other module's SPM package to the Example xcodeproj
+2. Uncomment its import + registration in `ExampleBootstrap.swift`
+
+```swift
+// import FeatureProfileMicroUI
+// FeatureProfileMicroUIConfig().registerMicroUI()
+```
+
+### Skipping Example app generation
+
+Use `--no-sandbox` if you don't need the standalone app:
+
+```bash
+owls-microui create Transfers --no-sandbox
+```
+
+---
+
 ## Architecture Patterns Generated
 
 Every new module includes working examples of:
@@ -281,6 +350,7 @@ Every new module includes working examples of:
 | **Mock data** | Toggleable in Debug Drawer (DEBUG only) |
 | **Error handling** | Loading / empty / error states via `OwlsLoadingView`, `OwlsEmptyState` |
 | **Testing** | Stub repository + 3 starter tests |
+| **Sandbox** | Standalone Example xcodeproj for isolated module runs |
 
 ---
 
